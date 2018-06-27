@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.aqp.service.YtDownloaderTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2018-06-11T15:37:36" hostname="kuba-MS-7918" time="0.0">
+  <properties/>
+  <testcase name="testDownloadYT" classname="com.aqp.service.YtDownloaderTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

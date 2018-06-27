@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Player</title>
+	<script src="/js/jquery.min.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
+	<script src="/js/sockJs.js"></script>
+	<script src="/js/stomp.min.js"></script>
+	<link rel="stylesheet" href="/css/bootstrap.css"></link>
+	
+</head>
+
+<body>
+<video  id="player" >
+</video>
+<button id="next" class="btn btn-default">Next</button>
+<button id="start" class="btn btn-default">Start</button>
+<button id="stop" class="btn btn-default">Stop</button>
+
+
+</body>
+<footer>
+<script>
+/*<![CDATA[*/
+var video = null;
+var source = null;
+var stompClient = null;
+document.getElementById('player').addEventListener('ended',getNext,false);
+$(document).ready(function(){
+	connect();
+	video = document.getElementById('player');
+	source = document.createElement('source');
+	video.appendChild(source);
+	getNext();
+})
+window.onbeforeunload = function (e) {
+  disconnect();
+};
+
+function getNext(){
+	$.get("/getNext", function(data){
+   		video.pause();   		
+   		source.setAttribute('src', "/videos/"+ data.name);  
+   		video.load();
+   		video.play();
+   	})
+}
+function connect() {
+    var socket = new SockJS('/gs-guide-websocket');
+    stompClient = Stomp.over(socket);
+    stompClient.connect({}, function (frame) {
+        stompClient.subscribe('/remote/player', function (msg) {
+       		switch(msg.body) {
+       	    case 'next':
+       	    	getNext();
+       	        break;
+       	    case 'stop':
+       	    	video.pause();
+       	    	break;
+       	 	case 'start':
+       	 		video.play(); 
+       	        break;
+       		}
+       		
+        });
+    });
+}
+	
+function disconnect() {
+    if (stompClient !== null) {
+        stompClient.disconnect();
+    }
+    console.log("Disconnected");
+}
+$( "#next" ).click(function() { 
+	sendNext();
+});
+$( "#start" ).click(function() { 
+	sendStart();
+});
+$( "#stop" ).click(function() { 
+	sendStop();
+});
+
+function sendNext() {
+    stompClient.send("/app/reciever", {}, 'next');
+}
+function sendStop() {
+    stompClient.send("/app/reciever", {}, 'stop');
+}
+function sendStart() {
+    stompClient.send("/app/reciever", {}, 'start');
+}
+/*]]>*/	
+</script>
+
+</footer>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Remote</title>
+	<script src="/js/jquery.min.js"></script>
+	<script src="/js/jqueryui.min.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
+	<script src="/js/sockJs.js"></script>
+	<script src="/js/stomp.min.js"></script>
+	<link rel="stylesheet" href="/css/bootstrap.css"></link>
+	<link rel="stylesheet" href="/css/jqueryui.css"></link>
+	
+</head>
+
+<body>
+<div class="container bg-dark fixed-top float-left">
+	<a href="/player" class="btn btn-dark">Player</a>
+	<button data-toggle="collapse" data-target="#remote" class="btn btn-dark">Remote</button>
+	<button data-toggle="collapse" data-target="#chooseNext" class="btn btn-dark">Enqueue</button>
+	<a href="/addVideo" class="btn btn-dark">Add</a>		
+</div>
+<div class="p-4">	
+</div>
+<div id="remote" class="container collapse p-3 ">
+	<button id="next" class="btn btn-default">Next</button>
+	<button id="start" class="btn btn-default">Start</button>
+	<button id="stop" class="btn btn-default">Stop</button>	
+</div>
+<div id="chooseNext" class="container collapse p-3">
+	<div class="ui-widget">
+		  <label for="vids">Videos: </label>
+		  <input id="vids">
+	</div>
+	<button id="enqueue" class="btn btn-default">enqueue</button>
+	<p id="enqueueMsg"></p>
+</div>
+</body>
+<footer>
+<script>
+/*<![CDATA[*/
+var songList = [];
+var response =null;
+$(document).ready(function(){
+    $( "#vids" ).autocomplete({
+        source: songList
+      });
+	$.get('/listVideos', function(data){
+		data.forEach(function(item,index){
+			songList.push(item.name);
+		});
+		//songlist=data;
+	})
+	
+	$('#enqueue').click(function(){	
+		$('#addVideoBtn').toggleClass("disabled");		
+		let name = $('#vids').val();
+		let vidReq = {'id':0,'name':name, 'path':'zxc'};
+		$.ajax({
+	  		  type: "POST",
+	  		  url: "/enqueue",
+	  		  data: JSON.stringify(vidReq),
+		   		  dateType: "json",
+		   	      contentType: "application/json",    		  
+	  		  dateType: "JSON",
+	  		complete: function(data, xhr, textStatus) { 			
+	  			
+	  			if(xhr=="success"){
+	  				response = data.responseJSON.name+ " enqueued";
+	  				$('#enqueueMsg').text(response);
+	  			}else{
+	  				$('#enqueueMsg').text("failed to enqueu");
+	  			}
+  	    	} 
+ 		});	
+	});
+})
+
+var stompClient = null;
+$(document).ready(function(){	
+	connect();
+})
+window.onbeforeunload = function (e) {
+  disconnect();
+};
+
+function connect() {
+    var socket = new SockJS('/gs-guide-websocket');
+    stompClient = Stomp.over(socket);
+    stompClient.connect({}, function (frame) {
+        /*stompClient.subscribe('/remote/player', function (msg) {
+       		switch(msg.body) {
+       	    case 'next':
+       	    	getNext();
+       	        break;
+       	    case 'stop':
+       	    	video.pause();
+       	    	break;
+       	 	case 'start':
+       	 		video.play(); 
+       	        break;
+       		}
+       		
+        });*/
+    });
+}
+	
+function disconnect() {
+    if (stompClient !== null) {
+        stompClient.disconnect();
+    }
+    console.log("Disconnected");
+}
+$( "#next" ).click(function() { 
+	sendNext();
+});
+$( "#start" ).click(function() { 
+	sendStart();
+});
+$( "#stop" ).click(function() { 
+	sendStop();
+});
+
+function sendNext() {
+    stompClient.send("/app/reciever", {}, 'next');
+}
+function sendStop() {
+    stompClient.send("/app/reciever", {}, 'stop');
+}
+function sendStart() {
+    stompClient.send("/app/reciever", {}, 'start');
+}
+
+
+
+
+/*]]>*/	
+</script>
+
+</footer>
+</html>
