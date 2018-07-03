@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Add song</title>
+	<script src="/js/jquery.min.js"></script>
+	<script src="/js/jqueryui.min.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="/css/bootstrap.css"></link>
+	<link rel="stylesheet" href="/css/jqueryui.css"></link>
+</head>
+<body>
+<div class="container bg-dark fixed-top float-left">
+	<a href="/player" class="btn btn-dark">Player</a>
+	<a href="/remote" class="btn btn-dark">Remote</a>
+	<a href="/addVideo" class="btn btn-dark">Add</a>		
+</div>
+<div class="p-4"></div>	
+<div id="addVideo" class="container p-3 m-2">
+	YT link: <input type="text" id="ytLink"><br/>
+	<input id="addCheckbox" type="checkbox" checked> Add to queue <br/>
+	<button id="addVideoBtn" class="btn btn-default">add</button>
+	<p id="addMsg"></p>
+	<div id="searchArea">
+		Search: <input type="text" id="ytSearch"><br/>
+		<button id="searchBtn" class="btn btn-default">Search</button>		
+	</div>
+</div>
+<div id="searchResults" class="container float-left"></div>
+<script>
+/*<![CDATA[*/
+var songList = [];
+var response =null;
+$(document).ready(function(){	
+	$('#addVideoBtn').click(function(){
+		$('#addMsg').text("processing");
+		let ytRequest = {'addAtEnd' : false, 'name': null,
+				'url': $('#ytLink').val()};
+		if ($('#addCheckbox').is(":checked"))
+		{
+		  	ytRequest.addAtEnd = true;
+		}
+		$.ajax({
+  		  type: "POST",
+  		  url: "/getVideo",
+  		  data: JSON.stringify(ytRequest),
+	   		  dateType: "json",
+	   	      contentType: "application/json",    		  
+  		  dateType: "JSON",
+  			complete: function(data, xhr, textStatus) {
+  			if(xhr=="success"){
+  				response = data.responseText+ " downloaded";
+  				$('#addMsg').text(response);
+ 	    		$('#addVideoBtn').toggleClass("disabled");
+  			}else{
+  				$('#addMsg').text("failed to download");
+	   	 		$('#addVideoBtn').toggleClass("disabled");
+  			}
+	    	} 
+ 		});	
+	})
+	
+	$('#searchBtn').click(function(){
+		let query = $('#ytSearch').val()
+		$.ajax({
+  		  type: "GET",
+  		  url: "/searchYt?str=" +  encodeURI(query),
+  			complete: function(data, xhr, textStatus) {  			
+  			if(xhr=="success"){
+  				data = data.responseJSON; 				
+ 	    		$('#searchBtn').toggleClass("disabled");
+ 	    		let addedVids = "";
+ 	    		for (let i=0; i<data.length; i++ ){
+ 	    			addedVids += '<div class="row m-2 p-1 bg-dark"><div class="col">';
+ 	    			addedVids += '<img width="100%" src="' + data[i].thumbnail + '"></img></div>';
+ 	    			addedVids += '<div class="col"><a href="' + data[i].id + '">' + data[i].name + '</a>';
+ 	    			addedVids += '<button class="btn btn-primary btn-block align-bottom" aria-pressed="false">add</button>'
+ 	    			addedVids += "</div></div>"; 	    			
+ 	    		} 	    		
+ 	    		$('#searchResults').html(addedVids);
+ 	    		$('#searchResults').find(':button').click(function(){ 	    			
+ 	    			$(this).removeClass("btn-primary").addClass("btn-secondary").attr("disabled", true);
+ 	    			let ytRequest = {'addAtEnd': false, 'url': null, 'name': null};
+ 	    			if ($('#addCheckbox').is(":checked"))
+ 	    			{
+ 	    			  	ytRequest.addAtEnd = true;
+ 	    			}
+ 	    			ytRequest.url = $(this).parent('div').find('a').attr('href');
+ 	    			ytRequest.name = $(this).parent('div').find('a').text();
+ 	    			$.ajax({
+ 	    		  		  type: "POST",
+ 	    		  		  url: "/getVideo",
+ 	    		  		  data: JSON.stringify(ytRequest),
+ 	    			   		  dateType: "json",
+ 	    			   	      contentType: "application/json",    		  
+ 	    		  		  dateType: "JSON",
+ 	    		  		complete: function(data, xhr, textStatus) { 	
+ 	    		  			if(xhr=="success"){
+ 	    		  				$(this).removeClass("btn-secondary").addClass("btn-success");
+ 	    		  			}else{
+ 	    		  				$(this).removeClass("btn-secondary").addClass("btn-danger");
+ 	    		  			}
+ 	    	  	    	} 
+ 	    	 		});
+ 	    		});
+  			}else{
+  				$('#addMsg').text("failed to search");
+	   	 		$('#searchBtn').toggleClass("disabled");
+  			}
+	    	} 
+ 		});	
+	})
+})
+
+
+
+
+
+
+/*]]>*/	
+</script>
+</body>
+</html>

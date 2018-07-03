@@ -10,16 +10,19 @@
 	<script src="/js/stomp.min.js"></script>
 	<link rel="stylesheet" href="/css/bootstrap.css"></link>
 	
+	<style type="text/css">
+	html {
+        overflow: hidden;
+	}
+	body {
+		bgcolor: Black;
+	}
+</style>
 </head>
 
-<body>
-<video  id="player" >
+<body bgcolor="black">
+<video  id="player" width="100%" height="100%" >
 </video>
-<button id="next" class="btn btn-default">Next</button>
-<button id="start" class="btn btn-default">Start</button>
-<button id="stop" class="btn btn-default">Stop</button>
-
-
 </body>
 <footer>
 <script>
@@ -42,7 +45,7 @@ window.onbeforeunload = function (e) {
 function getNext(){
 	$.get("/getNext", function(data){
    		video.pause();   		
-   		source.setAttribute('src', "/videos/"+ data.name);  
+   		source.setAttribute('src', "/videos/"+ decodeURI(data.name));  
    		video.load();
    		video.play();
    	})
@@ -84,15 +87,7 @@ $( "#stop" ).click(function() {
 	sendStop();
 });
 
-function sendNext() {
-    stompClient.send("/app/reciever", {}, 'next');
-}
-function sendStop() {
-    stompClient.send("/app/reciever", {}, 'stop');
-}
-function sendStart() {
-    stompClient.send("/app/reciever", {}, 'start');
-}
+
 /*]]>*/	
 </script>
 

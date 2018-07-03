@@ -15,10 +15,11 @@
 </head>
 
 <body>
-<div class="container bg-dark fixed-top">
+<div class="container bg-dark fixed-top float-left">
+	<a href="/player" class="btn btn-dark">Player</a>
 	<button data-toggle="collapse" data-target="#remote" class="btn btn-dark">Remote</button>
 	<button data-toggle="collapse" data-target="#chooseNext" class="btn btn-dark">Enqueue</button>
-	<button data-toggle="collapse" data-target="#addVideo" class="btn btn-dark">YtDown</button>		
+	<a href="/addVideo" class="btn btn-dark">Add</a>		
 </div>
 <div class="p-4">	
 </div>
@@ -35,15 +36,6 @@
 	<button id="enqueue" class="btn btn-default">enqueue</button>
 	<p id="enqueueMsg"></p>
 </div>
-<div id="addVideo" class="container collapse p-3">
-	YT link: <input type="text" id="ytLink"><br/>
-	<input id="addCheckbox" type="checkbox" checked> Add to queue <br/>
-	<button id="addVideoBtn" class="btn btn-default">add</button>
-	<p id="addMsg"></p>
-</div>
-
-
-
 </body>
 <footer>
 <script>
@@ -83,34 +75,6 @@ $(document).ready(function(){
   	    	} 
  		});	
 	});
-	
-	$('#addVideoBtn').click(function(){
-		$('#addMsg').text("processing");
-		let ytRequest = {'addAtEnd' : false,
-				'url': $('#ytLink').val()};
-		if ($('#addCheckbox').is(":checked"))
-		{
-		  	ytRequest.addAtEnd = true;
-		}
-		$.ajax({
-  		  type: "POST",
-  		  url: "/getVideo",
-  		  data: JSON.stringify(ytRequest),
-	   		  dateType: "json",
-	   	      contentType: "application/json",    		  
-  		  dateType: "JSON",
-  			complete: function(data, xhr, textStatus) {
-  			if(xhr=="success"){
-  				response = data.responseJSON.name+ " downloaded";
-  				$('#addMsg').text(response);
- 	    		$('#addVideoBtn').toggleClass("disabled");
-  			}else{
-  				$('#addMsg').text("failed to download");
-	   	 		$('#addVideoBtn').toggleClass("disabled");
-  			}
-	    	} 
- 		});	
-	})
 })
 
 var stompClient = null;
@@ -125,7 +89,7 @@ function connect() {
     var socket = new SockJS('/gs-guide-websocket');
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
-        stompClient.subscribe('/remote/player', function (msg) {
+        /*stompClient.subscribe('/remote/player', function (msg) {
        		switch(msg.body) {
        	    case 'next':
        	    	getNext();
@@ -138,7 +102,7 @@ function connect() {
        	        break;
        		}
        		
-        });
+        });*/
     });
 }
 	
